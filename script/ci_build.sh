@@ -25,7 +25,7 @@ do
     esac
 done
 
-BUILD_ARGS+=("-DCMAKE_BUILD_TYPE=${BUILD_TYPE}")
+BUILD_ARGS+=("-DCMAKE_BUILD_TYPE=${BUILD_TYPE}" "-DINTEGRATIONTEST=ON")
 
 
 if [[ "${CXX}" == clang* ]]

@@ -22,29 +22,51 @@
 #include "com/ConnectionFactory.h"
 #include "com/UsbContext.h"
 #include "Version.h"
+#include <algorithm>
+#include <exception>
 #include <iostream>
+
+namespace
+{
+    void printData(const plug::com::InitalData& data)
+    {
+        const auto [chain, presets] = data;
+
+        std::cout << "-- Selected : " << chain.name() << "\n";
+
+        std::cout << "-- Presets (" << presets.size() << ")\n";
+        std::for_each(presets.cbegin(), presets.cend(), [](const auto& p)
+                      { std::cout << "    - " << p << "\n"; });
+        std::cout << "---\n\n";
+    }
+}
 
 int main()
 {
-    using namespace plug::com::usb;
+    using namespace plug::com;
 
-    std::cout << " === Plug v" << plug::version() << " - Integrationtest ===\n\n";
+    std::cout << " === Plug v" << plug::version() << " ===\n\n";
 
-    Context ctx;
-    auto devs = listDevices();
-
-    for (auto& d : devs)
+    try
     {
-        try
-        {
-            std::cout << " - " << d.vendorId() << ":" << d.productId() << "\n";
-            d.open();
-        }
-        catch (const std::exception& ex)
-        {
-            std::cout << "ERROR: " << ex.what() << "\n";
-        }
-    }
+        usb::Context ctx;
 
+        std::cout << " * Setup Mustang\n";
+        auto mustang = std::make_unique<plug::com::Mustang>(plug::com::createUsbConnection());
+
+        std::cout << " * Start amp / receive amp data\n";
+        const auto data = mustang->start_amp();
+        printData(data);
+
+        std::cout << " * Stop amp\n";
+        mustang->stop_amp();
+
+        std::cout << " * Closed\n";
+    }
+    catch (const std::exception& ex)
+    {
+        std::cout << "ERROR: " << ex.what() << "\n";
+        return 1;
+    }
     return 0;
 }
