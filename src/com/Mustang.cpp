@@ -34,20 +34,29 @@
 
 namespace
 {
-    void printReceived(const std::vector<std::uint8_t>& data)
+    void printReceived(const plug::com::PacketRawType& data)
     {
         std::cout << "-- Received Bytes (" << data.size() << ")\n";
 
         if (!data.empty())
         {
+            std::size_t n{0};
             const std::ios::fmtflags flags{std::cout.flags()};
-            std::for_each(data.cbegin(), data.cend(), [](const auto& d)
-                          { std::cout << std::hex
-                                      << std::uint16_t{d} << " "; });
+
+            for (const auto& d : data)
+            {
+                if (n >= 8)
+                {
+                    std::cout << "\n";
+                    n = 0;
+                }
+                std::cout << std::hex << std::setw(2) << std::setfill('0') << std::uint16_t{d} << " ";
+                ++n;
+            }
             std::cout << "\n--------------------\n";
             std::cout.flags(flags);
         }
-        std::cout << "\n";
+        std::cout << std::flush;
     }
 }
 
@@ -65,9 +74,7 @@ namespace plug::com
 
     std::vector<std::uint8_t> receivePacket(Connection& conn)
     {
-        const auto data = conn.receive(packetRawTypeSize);
-        printReceived(data);
-        return data;
+        return conn.receive(packetRawTypeSize);
     }
 
 
@@ -203,6 +210,12 @@ namespace plug::com
 
         std::array<PacketRawType, 7> presetData{{}};
         std::copy(std::next(recieved_data.cbegin(), max_to_receive), std::next(recieved_data.cbegin(), max_to_receive + 7), presetData.begin());
+
+
+        for (const auto& preset : presetData)
+        {
+            printReceived(preset);
+        }
 
         return {decode_data(presetData), presetNames};
     }

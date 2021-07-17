@@ -32,12 +32,12 @@ namespace
     {
         const auto [chain, presets] = data;
 
-        std::cout << "-- Selected : " << chain.name() << "\n";
-
-        std::cout << "-- Presets (" << presets.size() << ")\n";
+        std::cout << "-- Selected : " << chain.name() << "\n"
+                  << "-- Presets (" << presets.size() << ")\n";
         std::for_each(presets.cbegin(), presets.cend(), [](const auto& p)
                       { std::cout << "    - " << p << "\n"; });
-        std::cout << "---\n\n";
+        std::cout << "---\n"
+                  << std::endl;
     }
 }
 
